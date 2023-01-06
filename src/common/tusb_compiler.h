@@ -232,6 +232,27 @@
   #define TU_BSWAP16(u16) ((unsigned short)_builtin_revw((unsigned long)u16))
   #define TU_BSWAP32(u32) (_builtin_revl(u32))
 
+#elif defined(__SDCC_mcs51)
+  #define TU_ATTR_ALIGNED(Bytes)
+  #define TU_ATTR_SECTION(sec_name)
+  #define TU_ATTR_PACKED
+  #define TU_ATTR_WEAK
+  #define TU_ATTR_ALWAYS_INLINE
+  #define TU_ATTR_DEPRECATED(mess)
+  #define TU_ATTR_UNUSED
+  #define TU_ATTR_USED
+  #define TU_ATTR_FALLTHROUGH
+
+  #define TU_ATTR_PACKED_BEGIN
+  #define TU_ATTR_PACKED_END
+  #define TU_ATTR_BIT_FIELD_ORDER_BEGIN
+  #define TU_ATTR_BIT_FIELD_ORDER_END
+
+  #define TU_BYTE_ORDER TU_LITTLE_ENDIAN
+
+  #define TU_BSWAP16(u16)  ((u16 << 8) | (u16 >> 8))
+  #define TU_BSWAP32(u32)  ((u32 << 16) | (u32 >> 16))
+
 #else 
   #error "Compiler attribute porting is required"
 #endif

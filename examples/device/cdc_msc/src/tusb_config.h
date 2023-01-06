@@ -50,7 +50,7 @@
 
 // defined by compiler flags for flexibility
 #ifndef CFG_TUSB_MCU
-#error CFG_TUSB_MCU must be defined
+#define CFG_TUSB_MCU OPT_MCU_M5623
 #endif
 
 #ifndef CFG_TUSB_OS
@@ -79,7 +79,7 @@
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN    __attribute__ ((aligned(4)))
+#define CFG_TUSB_MEM_ALIGN  //  __attribute__ ((aligned(4)))
 #endif
 
 //--------------------------------------------------------------------

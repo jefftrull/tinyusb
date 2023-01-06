@@ -979,7 +979,8 @@ static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const 
       {
         // Hack here: we modify the request length to prevent usbd_control response with zlp
         // since we are responding with 1 packet & less data than wLength.
-        tusb_control_request_t mod_request = *p_request;
+        static tusb_control_request_t mod_request;
+        memcpy(&mod_request, p_request, sizeof(mod_request));
         mod_request.wLength = CFG_TUD_ENDPOINT0_SIZE;
 
         return tud_control_xfer(rhport, &mod_request, desc_device, CFG_TUD_ENDPOINT0_SIZE);
