@@ -335,7 +335,7 @@ uint16_t cdcd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint1
 // Invoked when a control transfer occurred on an interface of this class
 // Driver response accordingly to the request and the transfer stage (setup/data/ack)
 // return false to stall control endpoint (e.g unsupported request)
-bool cdcd_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request)
+bool cdcd_control_xfer_cb(uint8_t rhport, uint8_t stage, CFG_TUSB_MEM_SECTION tusb_control_request_t const * request)
 {
   // Handle class request only
   TU_VERIFY(request->bmRequestType_bit.type == TUSB_REQ_TYPE_CLASS);

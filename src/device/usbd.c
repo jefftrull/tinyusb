@@ -282,13 +282,13 @@ static osal_mutex_t _usbd_mutex;
 //--------------------------------------------------------------------+
 // Prototypes
 //--------------------------------------------------------------------+
-static bool process_control_request(uint8_t rhport, tusb_control_request_t const * p_request);
+static bool process_control_request(uint8_t rhport, CFG_TUSB_MEM_SECTION tusb_control_request_t const * p_request);
 static bool process_set_config(uint8_t rhport, uint8_t cfg_num);
-static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const * p_request);
+static bool process_get_descriptor(uint8_t rhport, CFG_TUSB_MEM_SECTION tusb_control_request_t const * p_request);
 
 // from usbd_control.c
 void usbd_control_reset(void);
-void usbd_control_set_request(tusb_control_request_t const *request);
+void usbd_control_set_request(CFG_TUSB_MEM_SECTION tusb_control_request_t const *request);
 void usbd_control_set_complete_callback( usbd_control_xfer_cb_t fp );
 bool usbd_control_xfer_cb (uint8_t rhport, uint8_t ep_addr, xfer_result_t event, uint32_t xferred_bytes);
 
@@ -602,7 +602,7 @@ void tud_task_ext(uint32_t timeout_ms, bool in_isr)
 //--------------------------------------------------------------------+
 
 // Helper to invoke class driver control request handler
-static bool invoke_class_control(uint8_t rhport, usbd_class_driver_t const * driver, tusb_control_request_t const * request)
+static bool invoke_class_control(uint8_t rhport, usbd_class_driver_t const * driver, CFG_TUSB_MEM_SECTION tusb_control_request_t const * request)
 {
   usbd_control_set_complete_callback(driver->control_xfer_cb);
   TU_LOG(USBD_DBG, "  %s control request\r\n", driver->name);
@@ -611,7 +611,7 @@ static bool invoke_class_control(uint8_t rhport, usbd_class_driver_t const * dri
 
 // This handles the actual request and its response.
 // return false will cause its caller to stall control endpoint
-static bool process_control_request(uint8_t rhport, tusb_control_request_t const * p_request)
+static bool process_control_request(uint8_t rhport, CFG_TUSB_MEM_SECTION tusb_control_request_t const * p_request)
 {
   usbd_control_set_complete_callback(NULL);
 
@@ -959,7 +959,7 @@ static bool process_set_config(uint8_t rhport, uint8_t cfg_num)
 }
 
 // return descriptor's buffer and update desc_len
-static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const * p_request)
+static bool process_get_descriptor(uint8_t rhport, CFG_TUSB_MEM_SECTION tusb_control_request_t const * p_request)
 {
   tusb_desc_type_t const desc_type = (tusb_desc_type_t) tu_u16_high(p_request->wValue);
   uint8_t const desc_index = tu_u16_low( p_request->wValue );
@@ -975,11 +975,11 @@ static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const 
       // Only response with exactly 1 Packet if: not addressed and host requested more data than device descriptor has.
       // This only happens with the very first get device descriptor and EP0 size = 8 or 16.
       if ((CFG_TUD_ENDPOINT0_SIZE < sizeof(tusb_desc_device_t)) && !_usbd_dev.addressed &&
-          ((tusb_control_request_t const*) p_request)->wLength > sizeof(tusb_desc_device_t))
+          ((CFG_TUSB_MEM_SECTION tusb_control_request_t const*) p_request)->wLength > sizeof(tusb_desc_device_t))
       {
         // Hack here: we modify the request length to prevent usbd_control response with zlp
         // since we are responding with 1 packet & less data than wLength.
-        static tusb_control_request_t mod_request;
+        CFG_TUSB_MEM_SECTION static tusb_control_request_t mod_request;
         memcpy(&mod_request, p_request, sizeof(mod_request));
         mod_request.wLength = CFG_TUD_ENDPOINT0_SIZE;
 

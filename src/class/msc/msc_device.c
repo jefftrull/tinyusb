@@ -78,17 +78,17 @@ CFG_TUSB_MEM_SECTION CFG_TUSB_MEM_ALIGN static uint8_t _mscd_buf[CFG_TUD_MSC_EP_
 // INTERNAL OBJECT & FUNCTION DECLARATION
 //--------------------------------------------------------------------+
 static int32_t proc_builtin_scsi(uint8_t lun, uint8_t const scsi_cmd[16], uint8_t* buffer, uint32_t bufsize);
-static void proc_read10_cmd(uint8_t rhport, mscd_interface_t* p_msc);
+static void proc_read10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc);
 
-static void proc_write10_cmd(uint8_t rhport, mscd_interface_t* p_msc);
-static void proc_write10_new_data(uint8_t rhport, mscd_interface_t* p_msc, uint32_t xferred_bytes);
+static void proc_write10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc);
+static void proc_write10_new_data(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc, uint32_t xferred_bytes);
 
 TU_ATTR_ALWAYS_INLINE static inline bool is_data_in(uint8_t dir)
 {
   return tu_bit_test(dir, 7);
 }
 
-static inline bool send_csw(uint8_t rhport, mscd_interface_t* p_msc)
+static inline bool send_csw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   // Data residue is always = host expect - actual transferred
   p_msc->csw.data_residue = p_msc->cbw.total_bytes - p_msc->xferred_len;
@@ -97,13 +97,13 @@ static inline bool send_csw(uint8_t rhport, mscd_interface_t* p_msc)
   return usbd_edpt_xfer(rhport, p_msc->ep_in , (uint8_t*) &p_msc->csw, sizeof(msc_csw_t));
 }
 
-static inline bool prepare_cbw(uint8_t rhport, mscd_interface_t* p_msc)
+static inline bool prepare_cbw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   p_msc->stage = MSC_STAGE_CMD;
   return usbd_edpt_xfer(rhport, p_msc->ep_out, (uint8_t*) &p_msc->cbw, sizeof(msc_cbw_t));
 }
 
-static void fail_scsi_op(uint8_t rhport, mscd_interface_t* p_msc, uint8_t status)
+static void fail_scsi_op(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc, uint8_t status)
 {
   msc_cbw_t const * p_cbw = &p_msc->cbw;
   msc_csw_t       * p_csw = &p_msc->csw;
@@ -272,7 +272,7 @@ uint16_t mscd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint1
   // Max length must be at least 1 interface + 2 endpoints
   TU_ASSERT(max_len >= drv_len, 0);
 
-  mscd_interface_t * p_msc = &_mscd_itf;
+  CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc = &_mscd_itf;
   p_msc->itf_num = itf_desc->bInterfaceNumber;
 
   // Open endpoint pair
@@ -284,7 +284,7 @@ uint16_t mscd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint1
   return drv_len;
 }
 
-static void proc_bot_reset(mscd_interface_t* p_msc)
+static void proc_bot_reset(CFG_TUSB_MEM_SECTION mscd_interface_t* p_msc)
 {
   p_msc->stage       = MSC_STAGE_CMD;
   p_msc->total_len   = 0;
@@ -298,12 +298,12 @@ static void proc_bot_reset(mscd_interface_t* p_msc)
 // Invoked when a control transfer occurred on an interface of this class
 // Driver response accordingly to the request and the transfer stage (setup/data/ack)
 // return false to stall control endpoint (e.g unsupported request)
-bool mscd_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request)
+bool mscd_control_xfer_cb(uint8_t rhport, uint8_t stage, CFG_TUSB_MEM_SECTION tusb_control_request_t const * request)
 {
   // nothing to do with DATA & ACK stage
   if (stage != CONTROL_STAGE_SETUP) return true;
 
-  mscd_interface_t* p_msc = &_mscd_itf;
+  CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc = &_mscd_itf;
 
   // Clear Endpoint Feature (stall) for recovery
   if ( TUSB_REQ_TYPE_STANDARD     == request->bmRequestType_bit.type      &&
@@ -387,7 +387,7 @@ bool mscd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t event, uint32_t
 {
   (void) event;
 
-  mscd_interface_t* p_msc = &_mscd_itf;
+  CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc = &_mscd_itf;
   msc_cbw_t const * p_cbw = &p_msc->cbw;
   msc_csw_t       * p_csw = &p_msc->csw;
 
@@ -649,7 +649,7 @@ static int32_t proc_builtin_scsi(uint8_t lun, uint8_t const scsi_cmd[16], uint8_
   (void) bufsize; // TODO refractor later
   int32_t resplen;
 
-  mscd_interface_t* p_msc = &_mscd_itf;
+  CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc = &_mscd_itf;
 
   switch ( scsi_cmd[0] )
   {
@@ -825,7 +825,7 @@ static int32_t proc_builtin_scsi(uint8_t lun, uint8_t const scsi_cmd[16], uint8_
   return resplen;
 }
 
-static void proc_read10_cmd(uint8_t rhport, mscd_interface_t* p_msc)
+static void proc_read10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   msc_cbw_t const * p_cbw = &p_msc->cbw;
 
@@ -863,7 +863,7 @@ static void proc_read10_cmd(uint8_t rhport, mscd_interface_t* p_msc)
   }
 }
 
-static void proc_write10_cmd(uint8_t rhport, mscd_interface_t* p_msc)
+static void proc_write10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   msc_cbw_t const * p_cbw = &p_msc->cbw;
   bool writable = true;
@@ -890,7 +890,7 @@ static void proc_write10_cmd(uint8_t rhport, mscd_interface_t* p_msc)
 }
 
 // process new data arrived from WRITE10
-static void proc_write10_new_data(uint8_t rhport, mscd_interface_t* p_msc, uint32_t xferred_bytes)
+static void proc_write10_new_data(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc, uint32_t xferred_bytes)
 {
   msc_cbw_t const * p_cbw = &p_msc->cbw;
 
