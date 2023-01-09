@@ -170,22 +170,8 @@ void led_blinking_task(void)
 // stuff I must implement
 //
 
-// board stuff. This should probably be under hw/bsp/something
-void board_led_write(bool state) {
-    // TODO
-    (void)state;
-}
-
-uint32_t board_millis(void) { return 100; }
-
-void board_init(void) {}
-
-// we don't have these, so it's a little alarming they seem to be required
-int board_uart_read(uint8_t* buf, int len) { return 0; }
-int board_uart_write(void const * buf, int len) { return 0; }
-
 // DCD "Device Setup" stuff as described in https://github.com/hathach/tinyusb/blob/master/docs/contributing/porting.rst
-// this goes somewhere else also
+// this goes somewhere else
 
 void dcd_init       (uint8_t rhport) {}
 
@@ -244,8 +230,6 @@ void dcd_sof_enable(uint8_t rhport, bool en) {}
 // sdcc does not support "weak" symbols you can test against to see if they are present
 // so here I put in all the missing "optional" functions here as no-ops
 #pragma disable_warning 85 // the parameters will be unused
-
-// BOZO review return values. Do they correspond to no-op?
 
 // the one DCD function that is optional/WEAK and also checked accordingly
 void dcd_edpt0_status_complete(uint8_t rhport, tusb_control_request_t const * request) {}

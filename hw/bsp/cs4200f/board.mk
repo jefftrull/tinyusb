@@ -13,5 +13,7 @@ MCU_DIR = hw/mcu/ali/m56xx
 
 INC += 	$(TOP)/$(MCU_DIR)
 
+SRC += cs4200f.c
+
 # inhibit -Os flag from being added
 CFLAGS_OPTIMIZED =
