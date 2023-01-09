@@ -126,11 +126,7 @@ bool     tu_fifo_full                   (tu_fifo_t* f);
 bool     tu_fifo_overflowed             (tu_fifo_t* f);
 void     tu_fifo_correct_read_pointer   (tu_fifo_t* f);
 
-TU_ATTR_ALWAYS_INLINE static inline
-uint16_t tu_fifo_depth(tu_fifo_t* f)
-{
-  return f->depth;
-}
+uint16_t tu_fifo_depth(tu_fifo_t* f);
 
 // Pointer modifications intended to be used in combinations with DMAs.
 // USE WITH CARE - NO SAFTY CHECKS CONDUCTED HERE! NOT MUTEX PROTECTED!

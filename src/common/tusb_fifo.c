@@ -1005,3 +1005,9 @@ void tu_fifo_get_write_info(tu_fifo_t *f, tu_fifo_buffer_info_t *info)
     info->ptr_wrap = f->buffer;            // Always start of buffer
   }
 }
+
+// putting this here because otherwise it's created in EVERY module, thanks SDCC
+uint16_t tu_fifo_depth(tu_fifo_t* f)
+{
+  return f->depth;
+}

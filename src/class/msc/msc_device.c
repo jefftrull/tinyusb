@@ -83,12 +83,12 @@ static void proc_read10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_
 static void proc_write10_cmd(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc);
 static void proc_write10_new_data(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc, uint32_t xferred_bytes);
 
-TU_ATTR_ALWAYS_INLINE static inline bool is_data_in(uint8_t dir)
+bool is_data_in(uint8_t dir)
 {
   return tu_bit_test(dir, 7);
 }
 
-static inline bool send_csw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
+bool send_csw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   // Data residue is always = host expect - actual transferred
   p_msc->csw.data_residue = p_msc->cbw.total_bytes - p_msc->xferred_len;
@@ -97,7 +97,7 @@ static inline bool send_csw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_
   return usbd_edpt_xfer(rhport, p_msc->ep_in , (uint8_t*) &p_msc->csw, sizeof(msc_csw_t));
 }
 
-static inline bool prepare_cbw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
+bool prepare_cbw(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t * p_msc)
 {
   p_msc->stage = MSC_STAGE_CMD;
   return usbd_edpt_xfer(rhport, p_msc->ep_out, (uint8_t*) &p_msc->cbw, sizeof(msc_cbw_t));
@@ -129,7 +129,7 @@ static void fail_scsi_op(uint8_t rhport, CFG_TUSB_MEM_SECTION mscd_interface_t *
   }
 }
 
-static inline uint32_t rdwr10_get_lba(uint8_t const command[])
+uint32_t rdwr10_get_lba(uint8_t const command[])
 {
   // use offsetof to avoid pointer to the odd/unaligned address
   uint32_t const lba = tu_unaligned_read32(command + offsetof(scsi_write10_t, lba));
@@ -138,13 +138,13 @@ static inline uint32_t rdwr10_get_lba(uint8_t const command[])
   return tu_ntohl(lba);
 }
 
-static inline uint16_t rdwr10_get_blockcount(msc_cbw_t const* cbw)
+uint16_t rdwr10_get_blockcount(msc_cbw_t const* cbw)
 {
   uint16_t const block_count = tu_unaligned_read16(cbw->command + offsetof(scsi_write10_t, block_count));
   return tu_ntohs(block_count);
 }
 
-static inline uint16_t rdwr10_get_blocksize(msc_cbw_t const* cbw)
+uint16_t rdwr10_get_blocksize(msc_cbw_t const* cbw)
 {
   // first extract block count in the command
   uint16_t const block_count = rdwr10_get_blockcount(cbw);
@@ -239,7 +239,7 @@ bool tud_msc_set_sense(uint8_t lun, uint8_t sense_key, uint8_t add_sense_code, u
   return true;
 }
 
-static inline void set_sense_medium_not_present(uint8_t lun)
+void set_sense_medium_not_present(uint8_t lun)
 {
   // default sense is NOT READY, MEDIUM NOT PRESENT
   tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3A, 0x00);

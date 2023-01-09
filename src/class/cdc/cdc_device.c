@@ -483,4 +483,99 @@ bool cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_
   return true;
 }
 
+// formerly inlined code
+// even though these are just wrappers sdcc produces nearly 50 bytes of
+// code for linkage. It adds up when the functions are duplicated in every module.
+
+int32_t tud_cdc_n_read_char (uint8_t itf)
+{
+  uint8_t ch;
+  return tud_cdc_n_read(itf, &ch, 1) ? (int32_t) ch : -1;
+}
+
+uint32_t tud_cdc_n_write_char(uint8_t itf, char ch)
+{
+  return tud_cdc_n_write(itf, &ch, 1);
+}
+
+uint32_t tud_cdc_n_write_str (uint8_t itf, char const* str)
+{
+  return tud_cdc_n_write(itf, str, strlen(str));
+}
+
+bool tud_cdc_connected (void)
+{
+  return tud_cdc_n_connected(0);
+}
+
+uint8_t tud_cdc_get_line_state (void)
+{
+  return tud_cdc_n_get_line_state(0);
+}
+
+void tud_cdc_get_line_coding (cdc_line_coding_t* coding)
+{
+  tud_cdc_n_get_line_coding(0, coding);
+}
+
+void tud_cdc_set_wanted_char (char wanted)
+{
+  tud_cdc_n_set_wanted_char(0, wanted);
+}
+
+uint32_t tud_cdc_available (void)
+{
+  return tud_cdc_n_available(0);
+}
+
+int32_t tud_cdc_read_char (void)
+{
+  return tud_cdc_n_read_char(0);
+}
+
+uint32_t tud_cdc_read (void* buffer, uint32_t bufsize)
+{
+  return tud_cdc_n_read(0, buffer, bufsize);
+}
+
+void tud_cdc_read_flush (void)
+{
+  tud_cdc_n_read_flush(0);
+}
+
+bool tud_cdc_peek (uint8_t* ui8)
+{
+  return tud_cdc_n_peek(0, ui8);
+}
+
+uint32_t tud_cdc_write_char (char ch)
+{
+  return tud_cdc_n_write_char(0, ch);
+}
+
+uint32_t tud_cdc_write (void const* buffer, uint32_t bufsize)
+{
+  return tud_cdc_n_write(0, buffer, bufsize);
+}
+
+uint32_t tud_cdc_write_str (char const* str)
+{
+  return tud_cdc_n_write_str(0, str);
+}
+
+uint32_t tud_cdc_write_flush (void)
+{
+  return tud_cdc_n_write_flush(0);
+}
+
+uint32_t tud_cdc_write_available(void)
+{
+  return tud_cdc_n_write_available(0);
+}
+
+bool tud_cdc_write_clear(void)
+{
+  return tud_cdc_n_write_clear(0);
+}
+
 #endif
