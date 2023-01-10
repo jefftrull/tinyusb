@@ -79,6 +79,7 @@ SRC_C += $(subst $(TOP)/,,$(wildcard $(TOP)/$(BOARD_PATH)/*.c))
 INC   += $(TOP)/$(FAMILY_PATH)
 
 # Compiler Flags
+ifneq (,$(findstring sdcc,$CC))
 CFLAGS += \
   -ggdb \
   -fdata-sections \
@@ -107,6 +108,7 @@ CFLAGS += \
   -Wuninitialized \
   -Wunused \
   -Wredundant-decls
+endif
 
 # conversion is too strict for most mcu driver, may be disable sign/int/arith-conversion
 #  -Wconversion
