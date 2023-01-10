@@ -35,7 +35,7 @@
 //------------- Unaligned Memory Access -------------//
 
 // ARMv7+ (M3-M7, M23-M33) can access unaligned memory
-#if (defined(__ARM_ARCH) && (__ARM_ARCH >= 7))
+#if ((defined(__ARM_ARCH) && (__ARM_ARCH >= 7)) || defined(__SDCC_mcs51))
   #define TUP_ARCH_STRICT_ALIGN   0
 #else
   #define TUP_ARCH_STRICT_ALIGN   1
