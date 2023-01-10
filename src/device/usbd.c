@@ -479,7 +479,7 @@ void tud_task_ext(uint32_t timeout_ms, bool in_isr)
   // Loop until there is no more events in the queue
   while (1)
   {
-    dcd_event_t event;
+    CFG_TUSB_MEM_SECTION static dcd_event_t event;
     if ( !osal_queue_receive(_usbd_q, &event, timeout_ms) ) return;
 
 #if CFG_TUSB_DEBUG >= 2
