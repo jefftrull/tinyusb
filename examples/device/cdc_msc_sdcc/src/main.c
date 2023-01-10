@@ -166,51 +166,6 @@ void led_blinking_task(void)
   led_state = 1 - led_state; // toggle
 }
 
-//
-// stuff I must implement
-//
-
-// DCD "Device Setup" stuff as described in https://github.com/hathach/tinyusb/blob/master/docs/contributing/porting.rst
-// this goes somewhere else
-
-void dcd_init       (uint8_t rhport) {}
-
-void dcd_int_enable (uint8_t rhport) {}
-
-void dcd_int_disable(uint8_t rhport) {}
-
-// ODDLY this does not get called
-// docs say "It will be called by application in the MCU USB interrupt handler"
-void dcd_int_handler(uint8_t rhport);
-
-void dcd_set_address(uint8_t rhport, uint8_t dev_addr) {}
-
-void dcd_remote_wakeup(uint8_t rhport) {}
-
-void dcd_connect(uint8_t rhport) {}
-
-void dcd_disconnect(uint8_t rhport) {}
-
-// dcd_event_bus_signal and dcd_event_setup_received should be called by our code
-
-// DCD endpoint stuff
-
-bool dcd_edpt_open            (uint8_t rhport, tusb_desc_endpoint_t const * desc_ep) {
-    return false;
-}
-
-void dcd_edpt_close (uint8_t rhport, uint8_t ep_addr) {}
-
-bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t total_bytes) {
-    return false;   // I guess?
-}
-
-// we must call dcd_edpt_xfer_complete
-
-void dcd_edpt_stall (uint8_t rhport, uint8_t ep_addr) {}
-
-void dcd_edpt_clear_stall     (uint8_t rhport, uint8_t ep_addr) {}
-
 // not listed as required in docs, but not WEAK either
 // "close all non-control endpoints, cancel all pending transfers"
 void dcd_edpt_close_all (uint8_t rhport) {}
@@ -265,7 +220,7 @@ int32_t tud_msc_request_sense_cb(uint8_t lun, void* buffer, uint16_t bufsize) {
 #include "device/usbd_pvt.h"
 
 usbd_class_driver_t const* usbd_app_driver_get_cb(uint8_t* driver_count) {
-    // this is bad too. The sheer existence of this function means the result
+    // this is bad too. The mere existence of this function means the result
     // is dereferenced
     TU_ASSERT(false);
     return NULL;
