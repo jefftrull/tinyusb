@@ -175,47 +175,18 @@ void dcd_edpt_clear_stall     (uint8_t rhport, uint8_t ep_addr);
 extern void dcd_event_handler(dcd_event_t const * event, bool in_isr);
 
 // helper to send bus signal event
-TU_ATTR_ALWAYS_INLINE static inline void dcd_event_bus_signal (uint8_t rhport, dcd_eventid_t eid, bool in_isr)
-{
-  dcd_event_t event = { .rhport = rhport, .event_id = eid };
-  dcd_event_handler(&event, in_isr);
-}
+void dcd_event_bus_signal (uint8_t rhport, dcd_eventid_t eid, bool in_isr);
 
 // helper to send bus reset event
-TU_ATTR_ALWAYS_INLINE static inline  void dcd_event_bus_reset (uint8_t rhport, tusb_speed_t speed, bool in_isr)
-{
-  dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_BUS_RESET };
-  event.bus_reset.speed = speed;
-  dcd_event_handler(&event, in_isr);
-}
+void dcd_event_bus_reset (uint8_t rhport, tusb_speed_t speed, bool in_isr);
 
 // helper to send setup received
-TU_ATTR_ALWAYS_INLINE static inline void dcd_event_setup_received(uint8_t rhport, uint8_t const * setup, bool in_isr)
-{
-  dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_SETUP_RECEIVED };
-  memcpy(&event.setup_received, setup, 8);
-
-  dcd_event_handler(&event, in_isr);
-}
+void dcd_event_setup_received(uint8_t rhport, uint8_t const * setup, bool in_isr);
 
 // helper to send transfer complete event
-TU_ATTR_ALWAYS_INLINE static inline void dcd_event_xfer_complete (uint8_t rhport, uint8_t ep_addr, uint32_t xferred_bytes, uint8_t result, bool in_isr)
-{
-  dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_XFER_COMPLETE };
+void dcd_event_xfer_complete (uint8_t rhport, uint8_t ep_addr, uint32_t xferred_bytes, uint8_t result, bool in_isr);
 
-  event.xfer_complete.ep_addr = ep_addr;
-  event.xfer_complete.len     = xferred_bytes;
-  event.xfer_complete.result  = result;
-
-  dcd_event_handler(&event, in_isr);
-}
-
-static inline void dcd_event_sof(uint8_t rhport, uint32_t frame_count, bool in_isr)
-{
-  dcd_event_t event = { .rhport = rhport, .event_id = DCD_EVENT_SOF };
-  event.sof.frame_count = frame_count;
-  dcd_event_handler(&event, in_isr);
-}
+void dcd_event_sof(uint8_t rhport, uint32_t frame_count, bool in_isr);
 
 #ifdef __cplusplus
  }

@@ -28,6 +28,7 @@ SRC_C += \
 	src/common/tusb_common.c \
 	src/common/tusb_fifo.c \
         src/osal/osal_none.c \
+	src/device/dcd.c \
 	src/device/usbd.c \
 	src/device/usbd_control.c \
 	src/class/audio/audio_device.c \
