@@ -1,5 +1,4 @@
 CFLAGS += \
-  -DTUP_DCD_ENDPOINT_MAX=8 \
   --model-large \
   --stack-auto \
   --fomit-frame-pointer

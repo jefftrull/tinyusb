@@ -275,6 +275,10 @@
 #elif TU_CHECK_MCU(OPT_MCU_F1C100S)
   #define TUP_DCD_ENDPOINT_MAX    4
 
+//------------ ALi ------------------//
+#elif TU_CHECK_MCU(OPT_MCU_M5623)
+  #define TUP_DCD_ENDPOINT_MAX 8
+
 #endif
 
 //--------------------------------------------------------------------+
