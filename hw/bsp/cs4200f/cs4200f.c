@@ -34,7 +34,7 @@ volatile uint8_t * main_light_ctl = (uint8_t*)0xffd0;
 // Timer functionality
 //
 const uint16_t TIMER2_RELOAD = 12000;  // produces 25ms interrupts
-static uint32_t cycles_elapsed = 0;
+static volatile uint32_t cycles_elapsed = 0;
 
 void timer2_isr (void) __interrupt (5) {
     TF2 = 0;  // reset and reload from RCAP2
@@ -67,7 +67,14 @@ void board_led_write(bool state) {
         *main_light_ctl |= 0x08;
 }
 
-uint32_t board_millis(void) { return 25 * cycles_elapsed; }
+uint32_t board_millis(void) {
+    // atomic read of current cycle count
+    ET2 = 0;
+    uint32_t cycles = cycles_elapsed;
+    ET2 = 1;
+
+    return 25 * cycles;
+}
 
 void board_init(void) {
     // turn off light so we know we got this far
