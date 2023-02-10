@@ -27,9 +27,6 @@
 #ifndef _TUSB_OPTION_H_
 #define _TUSB_OPTION_H_
 
-// To avoid GCC compiler warnings when -pedantic option is used (strict ISO C)
-typedef int make_iso_compilers_happy;
-
 #include "common/tusb_compiler.h"
 
 #define TUSB_VERSION_MAJOR     0
@@ -160,6 +157,9 @@ typedef int make_iso_compilers_happy;
 // Allwinner
 #define OPT_MCU_F1C100S          2100 ///< Allwinner F1C100s family
 
+// WCH
+#define OPT_MCU_CH32V307         2200 ///< WCH CH32V307
+
 // Acer Labs, Inc.
 #define OPT_MCU_M5623            2200 ///< Acer Labs USB controller family M56XX
 
@@ -259,6 +259,10 @@ typedef int make_iso_compilers_happy;
 // For backward compatible
 #define TUSB_OPT_HOST_ENABLED   CFG_TUH_ENABLED
 
+// highspeed support indicator
+#define TUH_OPT_HIGH_SPEED    (CFG_TUH_MAX_SPEED ? (CFG_TUH_MAX_SPEED & OPT_MODE_HIGH_SPEED) : TUP_RHPORT_HIGHSPEED)
+
+
 //--------------------------------------------------------------------+
 // TODO move later
 //--------------------------------------------------------------------+
@@ -301,9 +305,6 @@ typedef int make_iso_compilers_happy;
 #ifndef CFG_TUSB_OS_INC_PATH
   #define CFG_TUSB_OS_INC_PATH
 #endif
-
-// mutex is only needed for RTOS TODO also required with multiple core MCUs
-#define TUSB_OPT_MUTEX      (CFG_TUSB_OS != OPT_OS_NONE)
 
 //--------------------------------------------------------------------
 // Device Options (Default)
@@ -433,6 +434,9 @@ typedef int make_iso_compilers_happy;
 #if CFG_TUD_ENDPOINT0_SIZE > 64
   #error Control Endpoint Max Packet Size cannot be larger than 64
 #endif
+
+// To avoid GCC compiler warnings when -pedantic option is used (strict ISO C)
+typedef int make_iso_compilers_happy;
 
 #endif /* _TUSB_OPTION_H_ */
 

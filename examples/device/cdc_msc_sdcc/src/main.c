@@ -231,18 +231,6 @@ usbd_class_driver_t const* usbd_app_driver_get_cb(uint8_t* driver_count) {
 
 void tud_cdc_tx_complete_cb(uint8_t itf) {}
 
-uint8_t const* tud_descriptor_device_qualifier_cb(void) {
-    // more dereferencing.
-    TU_ASSERT(false);
-    return NULL;
-}
-
 void tud_cdc_line_coding_cb(uint8_t itf, cdc_line_coding_t const* p_line_coding) {}
-
-uint8_t const* tud_descriptor_other_speed_configuration_cb(uint8_t index) {
-    // more dereferencing
-    TU_ASSERT(false);
-    return NULL;
-}
 
 void tud_msc_scsi_complete_cb(uint8_t lun, uint8_t const scsi_cmd[16]) {}

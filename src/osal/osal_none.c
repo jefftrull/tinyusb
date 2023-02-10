@@ -67,6 +67,9 @@ void osal_semaphore_reset(osal_semaphore_t sem_hdl)
 // MUTEX API
 // Within tinyusb, mutex is never used in ISR context
 //--------------------------------------------------------------------+
+#if OSAL_MUTEX_REQUIRED
+// Note: multiple cores MCUs usually do provide IPC API for mutex
+// or we can use std atomic function
 osal_mutex_t osal_mutex_create(osal_mutex_def_t* mdef)
 {
   mdef->count = 1;
@@ -82,6 +85,8 @@ bool osal_mutex_unlock(osal_mutex_t mutex_hdl)
 {
   return osal_semaphore_post(mutex_hdl, false);
 }
+
+#endif
 
 //--------------------------------------------------------------------+
 // QUEUE API
