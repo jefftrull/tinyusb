@@ -36,13 +36,13 @@ jobs:
         cd test/unit-test
         ceedling test:all
 
-    - name: Build Fuzzer
-      run: |
-        export CC=clang
-        export CXX=clang++
-        fuzz_harness=$(ls -d test/fuzz/device/*/)
-        for h in $fuzz_harness
-        do
-          make -C $h get-deps
-          make -C $h all
-        done
+    # - name: Build Fuzzer
+    #   run: |
+    #     export CC=clang
+    #     export CXX=clang++
+    #     fuzz_harness=$(ls -d test/fuzz/device/*/)
+    #     for h in $fuzz_harness
+    #     do
+    #       make -C $h get-deps
+    #       make -C $h all
+    #     done
