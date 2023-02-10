@@ -45,7 +45,7 @@ enum  {
   BLINK_SUSPENDED = 2500,
 };
 
-static uint16_t blink_interval_ms = BLINK_NOT_MOUNTED;
+static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 void led_blinking_task(void);
 void cdc_task(void);
@@ -155,7 +155,7 @@ void tud_cdc_rx_cb(uint8_t itf)
 //--------------------------------------------------------------------+
 void led_blinking_task(void)
 {
-  static uint16_t start_ms = 0;
+  static uint32_t start_ms = 0;
   static bool led_state = false;
 
   // Blink every interval ms
