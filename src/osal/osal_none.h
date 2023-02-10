@@ -92,8 +92,8 @@ typedef osal_queue_def_t* osal_queue_t;
 
 // _int_set is used as mutex in OS NONE (disable/enable USB ISR)
 #define OSAL_QUEUE_DEF(_int_set, _name, _depth, _type)    \
-  __xdata uint8_t _name##_buf[_depth*sizeof(_type)];              \
-  __xdata osal_queue_def_t _name = {                              \
+  uint8_t _name##_buf[_depth*sizeof(_type)];              \
+  osal_queue_def_t _name = {                              \
     .interrupt_set = _int_set,                            \
     .ff = TU_FIFO_INIT(_name##_buf, _depth, _type, false) \
   }

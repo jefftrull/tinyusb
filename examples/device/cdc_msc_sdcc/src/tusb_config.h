@@ -75,7 +75,9 @@
  * - CFG_TUSB_MEM_ALIGN   : __attribute__ ((aligned(4)))
  */
 #ifndef CFG_TUSB_MEM_SECTION
+#ifdef __SDCC_mcs51
 #define CFG_TUSB_MEM_SECTION __xdata
+#endif
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
