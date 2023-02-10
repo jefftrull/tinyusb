@@ -29,6 +29,7 @@
 
 #include "osal/osal.h"
 #include "tusb_fifo.h"
+TEST_FILE("tusb_common.c")
 
 #define FIFO_SIZE   64
 uint8_t tu_ff_buf[FIFO_SIZE * sizeof(uint8_t)];

@@ -30,6 +30,8 @@
 #include "tusb.h"
 #include "usbd.h"
 TEST_FILE("usbd_control.c")
+TEST_FILE("osal_none.c")
+TEST_FILE("tusb_common.c")
 
 // Mock File
 #include "mock_dcd.h"
