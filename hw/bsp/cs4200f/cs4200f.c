@@ -26,19 +26,63 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <mcs51/8052.h>
+
+volatile uint8_t * main_light_ctl = (uint8_t*)0xffd0;
+
+//
+// Timer functionality
+//
+const uint16_t TIMER2_RELOAD = 12000;  // produces 25ms interrupts
+static uint32_t cycles_elapsed = 0;
+
+void timer2_isr (void) __interrupt (5) {
+    TF2 = 0;  // reset and reload from RCAP2
+
+    ++cycles_elapsed;
+}
+
+void timer_init (void) {
+    // set up timer 2
+
+    T2CON = 0;    // stop count and configure as internal timer
+    uint16_t reload_with = TIMER2_RELOAD;
+    RCAP2H = (reload_with & 0xff00) >> 8;
+    RCAP2L = reload_with & 0x00ff;
+    TH2 = RCAP2H;
+    TL2 = RCAP2L;
+    TR2 = 1;     // start counting
+    ET2 = 1;     // enable interrupt
+}
 
 //--------------------------------------------------------------------+
 // Board porting API
 //--------------------------------------------------------------------+
 
 void board_led_write(bool state) {
-    // TODO
-    (void)state;
+    if (state) {
+        *main_light_ctl &= 0xf7;
+    }
+    else
+        *main_light_ctl |= 0x08;
 }
 
-uint32_t board_millis(void) { return 100; }
+uint32_t board_millis(void) { return 25 * cycles_elapsed; }
 
-void board_init(void) {}
+void board_init(void) {
+    // turn off light so we know we got this far
+    *main_light_ctl |= 0x08;
+
+    // turn off unwanted interrupts
+    ET0 = 0;
+    ET1 = 0;
+    EX0 = 0;
+    EX1 = 0;
+
+    timer_init();
+
+    EA = 1;      // enable interrupts overall
+}
 
 // we don't have these, so it's a little alarming they seem to be required
 int board_uart_read(uint8_t* buf, int len) { return 0; }

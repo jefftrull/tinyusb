@@ -50,6 +50,9 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 void led_blinking_task(void);
 void cdc_task(void);
 
+// tell SDCC this exists so it will create an interrupt table entry
+void timer2_isr (void) __interrupt (5);
+
 /*------------- MAIN -------------*/
 int main(void)
 {
