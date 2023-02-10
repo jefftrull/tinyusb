@@ -90,3 +90,18 @@ bool tu_is_power_of_two(uint32_t value)
 {
    return (value != 0) && ((value & (value - 1)) == 0);
 }
+
+// avoid multiple instantiations in sdcc
+
+#if TUP_ARCH_STRICT_ALIGN
+#elif TUP_MCU_STRICT_ALIGN
+#else
+
+// MCU that could access unaligned memory natively
+uint32_t tu_unaligned_read32  (const void* mem) { return *((uint32_t const *) mem); }
+uint16_t tu_unaligned_read16  (const void* mem) { return *((uint16_t const *) mem); }
+
+void     tu_unaligned_write32 (void* mem, uint32_t value ) { *((uint32_t*) mem) = value; }
+void     tu_unaligned_write16 (void* mem, uint16_t value ) { *((uint16_t*) mem) = value; }
+
+#endif

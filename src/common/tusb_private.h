@@ -93,28 +93,12 @@ bool tu_edpt_stream_init(tu_edpt_stream_t* s, bool is_host, bool is_tx, bool ove
 
 // Open an stream for an endpoint
 // hwid is either device address (host mode) or rhport (device mode)
-TU_ATTR_ALWAYS_INLINE static inline
-void tu_edpt_stream_open(tu_edpt_stream_t* s, uint8_t hwid, tusb_desc_endpoint_t const *desc_ep)
-{
-  tu_fifo_clear(&s->ff);
-  s->hwid = hwid;
-  s->ep_addr = desc_ep->bEndpointAddress;
-  s->ep_packetsize = tu_edpt_packet_size(desc_ep);
-}
+void tu_edpt_stream_open(tu_edpt_stream_t* s, uint8_t hwid, tusb_desc_endpoint_t const *desc_ep);
 
-TU_ATTR_ALWAYS_INLINE static inline
-void tu_edpt_stream_close(tu_edpt_stream_t* s)
-{
-  s->hwid = 0;
-  s->ep_addr = 0;
-}
+void tu_edpt_stream_close(tu_edpt_stream_t* s);
 
 // Clear fifo
-TU_ATTR_ALWAYS_INLINE static inline
-bool tu_edpt_stream_clear(tu_edpt_stream_t* s)
-{
-  return tu_fifo_clear(&s->ff);
-}
+bool tu_edpt_stream_clear(tu_edpt_stream_t* s);
 
 //--------------------------------------------------------------------+
 // Stream Write
@@ -130,11 +114,7 @@ uint32_t tu_edpt_stream_write_xfer(tu_edpt_stream_t* s);
 bool tu_edpt_stream_write_zlp_if_needed(tu_edpt_stream_t* s, uint32_t last_xferred_bytes);
 
 // Get the number of bytes available for writing
-TU_ATTR_ALWAYS_INLINE static inline
-uint32_t tu_edpt_stream_write_available(tu_edpt_stream_t* s)
-{
-  return (uint32_t) tu_fifo_remaining(&s->ff);
-}
+uint32_t tu_edpt_stream_write_available(tu_edpt_stream_t* s);
 
 //--------------------------------------------------------------------+
 // Stream Read
@@ -147,24 +127,12 @@ uint32_t tu_edpt_stream_read(tu_edpt_stream_t* s, void* buffer, uint32_t bufsize
 uint32_t tu_edpt_stream_read_xfer(tu_edpt_stream_t* s);
 
 // Must be called in the transfer complete callback
-TU_ATTR_ALWAYS_INLINE static inline
-void tu_edpt_stream_read_xfer_complete(tu_edpt_stream_t* s, uint32_t xferred_bytes)
-{
-  tu_fifo_write_n(&s->ff, s->ep_buf, (uint16_t) xferred_bytes);
-}
+void tu_edpt_stream_read_xfer_complete(tu_edpt_stream_t* s, uint32_t xferred_bytes);
 
 // Get the number of bytes available for reading
-TU_ATTR_ALWAYS_INLINE static inline
-uint32_t tu_edpt_stream_read_available(tu_edpt_stream_t* s)
-{
-  return (uint32_t) tu_fifo_count(&s->ff);
-}
+uint32_t tu_edpt_stream_read_available(tu_edpt_stream_t* s);
 
-TU_ATTR_ALWAYS_INLINE static inline
-bool tu_edpt_stream_peek(tu_edpt_stream_t* s, uint8_t* ch)
-{
-  return tu_fifo_peek(&s->ff, ch);
-}
+bool tu_edpt_stream_peek(tu_edpt_stream_t* s, uint8_t* ch);
 
 #ifdef __cplusplus
  }

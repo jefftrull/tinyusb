@@ -505,39 +505,19 @@ TU_ATTR_BIT_FIELD_ORDER_END
 //--------------------------------------------------------------------+
 
 // Get direction from Endpoint address
-TU_ATTR_ALWAYS_INLINE static inline tusb_dir_t tu_edpt_dir(uint8_t addr)
-{
-  return (addr & TUSB_DIR_IN_MASK) ? TUSB_DIR_IN : TUSB_DIR_OUT;
-}
+tusb_dir_t tu_edpt_dir(uint8_t addr);
 
 // Get Endpoint number from address
-TU_ATTR_ALWAYS_INLINE static inline uint8_t tu_edpt_number(uint8_t addr)
-{
-  return (uint8_t)(addr & (~TUSB_DIR_IN_MASK));
-}
+uint8_t tu_edpt_number(uint8_t addr);
 
-TU_ATTR_ALWAYS_INLINE static inline uint8_t tu_edpt_addr(uint8_t num, uint8_t dir)
-{
-  return (uint8_t)(num | (dir ? TUSB_DIR_IN_MASK : 0));
-}
+uint8_t tu_edpt_addr(uint8_t num, uint8_t dir);
 
-TU_ATTR_ALWAYS_INLINE static inline uint16_t tu_edpt_packet_size(tusb_desc_endpoint_t const* desc_ep)
-{
-  return tu_le16toh(desc_ep->wMaxPacketSize) & TU_GENMASK(10, 0);
-}
+uint16_t tu_edpt_packet_size(tusb_desc_endpoint_t const* desc_ep);
 
 #if CFG_TUSB_DEBUG
-TU_ATTR_ALWAYS_INLINE static inline const char *tu_edpt_dir_str(tusb_dir_t dir)
-{
-  static const char *str[] = {"out", "in"};
-  return str[dir];
-}
+const char *tu_edpt_dir_str(tusb_dir_t dir);
 
-TU_ATTR_ALWAYS_INLINE static inline const char *tu_edpt_type_str(tusb_xfer_type_t t)
-{
-  static const char *str[] = {"control", "isochronous", "bulk", "interrupt"};
-  return str[t];
-}
+const char *tu_edpt_type_str(tusb_xfer_type_t t);
 #endif
 
 //--------------------------------------------------------------------+

@@ -203,11 +203,11 @@ TU_ATTR_ALWAYS_INLINE static inline void tu_unaligned_write16(void* mem, uint16_
 #else
 
 // MCU that could access unaligned memory natively
-TU_ATTR_ALWAYS_INLINE static inline uint32_t tu_unaligned_read32  (const void* mem) { return *((uint32_t const *) mem); }
-TU_ATTR_ALWAYS_INLINE static inline uint16_t tu_unaligned_read16  (const void* mem) { return *((uint16_t const *) mem); }
+uint32_t tu_unaligned_read32  (const void* mem);
+uint16_t tu_unaligned_read16  (const void* mem);
 
-TU_ATTR_ALWAYS_INLINE static inline void     tu_unaligned_write32 (void* mem, uint32_t value ) { *((uint32_t*) mem) = value; }
-TU_ATTR_ALWAYS_INLINE static inline void     tu_unaligned_write16 (void* mem, uint16_t value ) { *((uint16_t*) mem) = value; }
+void     tu_unaligned_write32 (void* mem, uint32_t value );
+void     tu_unaligned_write16 (void* mem, uint16_t value );
 
 #endif
 
