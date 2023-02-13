@@ -27,4 +27,13 @@ cov-int
 *-build-dir
 /_bin/
 __pycache__
-
+# SDCC artifacts
+*.asm
+*.lst
+*.rel
+*.sym
+*.ihx
+*.lk
+*.rst
+*.mem
+*.map
