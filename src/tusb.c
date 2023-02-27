@@ -118,6 +118,22 @@ const char *tu_edpt_type_str(tusb_xfer_type_t t)
 // Descriptor helper
 //--------------------------------------------------------------------+
 
+uint8_t const * tu_desc_next(void const* desc)
+{
+  uint8_t const* desc8 = (uint8_t const*) desc;
+  return desc8 + desc8[DESC_OFFSET_LEN];
+}
+
+uint8_t tu_desc_type(void const* desc)
+{
+  return ((uint8_t const*) desc)[DESC_OFFSET_TYPE];
+}
+
+uint8_t tu_desc_len(void const* desc)
+{
+  return ((uint8_t const*) desc)[DESC_OFFSET_LEN];
+}
+
 uint8_t const * tu_desc_find(uint8_t const* desc, uint8_t const* end, uint8_t byte1)
 {
   while(desc+1 < end)

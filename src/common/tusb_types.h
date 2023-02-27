@@ -525,23 +525,13 @@ const char *tu_edpt_type_str(tusb_xfer_type_t t);
 //--------------------------------------------------------------------+
 
 // return next descriptor
-TU_ATTR_ALWAYS_INLINE static inline uint8_t const * tu_desc_next(void const* desc)
-{
-  uint8_t const* desc8 = (uint8_t const*) desc;
-  return desc8 + desc8[DESC_OFFSET_LEN];
-}
+uint8_t const * tu_desc_next(void const* desc);
 
 // get descriptor type
-TU_ATTR_ALWAYS_INLINE static inline uint8_t tu_desc_type(void const* desc)
-{
-  return ((uint8_t const*) desc)[DESC_OFFSET_TYPE];
-}
+uint8_t tu_desc_type(void const* desc);
 
 // get descriptor length
-TU_ATTR_ALWAYS_INLINE static inline uint8_t tu_desc_len(void const* desc)
-{
-  return ((uint8_t const*) desc)[DESC_OFFSET_LEN];
-}
+uint8_t tu_desc_len(void const* desc);
 
 // find descriptor that match byte1 (type)
 uint8_t const * tu_desc_find(uint8_t const* desc, uint8_t const* end, uint8_t byte1);
