@@ -31,9 +31,62 @@
 
 #include "device/dcd.h"
 
+#include "hw/mcu/ali/m56xx/m5623_rv51.h"
+
 #if CFG_TUD_ENABLED && (CFG_TUSB_MCU == OPT_MCU_M5623_RV51)
 
-void dcd_init       (uint8_t rhport) {}
+void write_mtvec(void (*fn)(void)) {
+    __asm__ volatile ("csrw    mtvec, %0"
+                      : /* output: none */
+                      : "r" ((uint32_t)(fn)) /* input : from register */
+                      : /* clobbers: none */);
+}
+
+static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
+    *(volatile uint8_t*)0xffd0 &= 0xf7;   // light on
+//    *(volatile uint8_t*)0xffd0 ^= 0x08;   // toggle light
+//    __asm__("ebreak");
+}
+
+void dcd_init       (uint8_t rhport) {
+    (void)rhport;
+
+    *(volatile uint8_t*)0xffd0 |= 0x08;   // light off
+
+    // initialize control endpoint
+    *CTL_CTRL = 0x10;
+    *CTL_CTRL = 0;
+
+    //
+    // set up RISCV interrupt handling in the emulator
+    //
+
+    // set mtvec to our (consolidated) interrupt handler
+    write_mtvec(dcd_isr);
+
+    // set bit 11 (MEIE) of mie to enable external interrupts
+    uint32_t mie;
+    __asm__ volatile ("csrr  %0, mie" : "=r"(mie));
+    mie |= ((uint32_t)1 << 11);
+    __asm__ volatile ("csrw mie, %0" : "=r"(mie));
+
+    // set bit 3 (MIE) of mstatus to enable all interrupts
+    uint32_t mstatus;
+    __asm__ volatile ("csrr  %0, mstatus" : "=r"(mstatus));
+    mstatus |= ((uint32_t)1 << 3);
+    __asm__ volatile ("csrw mstatus, %0" : "=r"(mstatus));
+
+    //
+    // set up 8051 level interrupts
+    //
+
+    // enable granular Reset, Rx and Tx interrupts for control endpoint
+    // (effectively ANDed with EX0, so this doesn't fully enable them)
+    *INTENR0 = 0x83;
+    // enable EX0 (USB) and general interrupts
+    *IE |= 0x81;
+}
+
 
 void dcd_int_enable (uint8_t rhport) {}
 
