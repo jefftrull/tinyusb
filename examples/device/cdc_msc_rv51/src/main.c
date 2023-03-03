@@ -50,8 +50,6 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 void led_blinking_task(void);
 void cdc_task(void);
 
-volatile uint8_t * main_light_ctl = (uint8_t*)0xffd0;
-
 /*------------- MAIN -------------*/
 int main(void)
 {
@@ -173,37 +171,6 @@ void led_blinking_task(void)
 //
 // stuff I must implement
 //
-
-// board stuff. This should probably be under hw/bsp/something
-void board_led_write(bool state) {
-    if (state) {
-        *main_light_ctl &= 0xf7;
-    }
-    else
-        *main_light_ctl |= 0x08;
-}
-
-#define csr_read(csr)                               \
-({                                                  \
-    register uint32_t v;                            \
-    __asm__ __volatile__ ("csrr %0, %1"             \
-                  : "=r" (v)                        \
-                  : "n" (csr)                       \
-                  : "memory");                      \
-    v;                                              \
-})
-
-uint32_t board_millis(void) {
-    // counter seems to roll over roughly every 25ms with the 12000 reload
-    return 25 * (csr_read(0xb00) >> 16);
-}
-
-void board_init(void) {
-}
-
-// needed for CDC. We will come up with something.
-int board_uart_read(uint8_t* buf, int len) { return 0; }
-int board_uart_write(void const * buf, int len) { return 0; }
 
 // not listed as required in docs, but not WEAK either
 // "close all non-control endpoints, cancel all pending transfers"
