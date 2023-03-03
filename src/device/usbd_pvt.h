@@ -97,11 +97,7 @@ void usbd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr);
 bool usbd_edpt_stalled(uint8_t rhport, uint8_t ep_addr);
 
 // Check if endpoint is ready (not busy and not stalled)
-TU_ATTR_ALWAYS_INLINE static inline
-bool usbd_edpt_ready(uint8_t rhport, uint8_t ep_addr)
-{
-  return !usbd_edpt_busy(rhport, ep_addr) && !usbd_edpt_stalled(rhport, ep_addr);
-}
+bool usbd_edpt_ready(uint8_t rhport, uint8_t ep_addr);
 
 // Enable SOF interrupt
 void usbd_sof_enable(uint8_t rhport, bool en);

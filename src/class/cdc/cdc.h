@@ -383,12 +383,6 @@ typedef struct TU_ATTR_PACKED
   } bmCapabilities;
 }cdc_desc_func_telephone_call_state_reporting_capabilities_t;
 
-// TODO remove
-static inline uint8_t cdc_functional_desc_typeof(uint8_t const * p_desc)
-{
-  return p_desc[2];
-}
-
 //--------------------------------------------------------------------+
 // Requests
 //--------------------------------------------------------------------+

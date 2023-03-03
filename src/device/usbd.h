@@ -49,11 +49,7 @@ bool tud_inited(void);
 void tud_task_ext(uint32_t timeout_ms, bool in_isr);
 
 // Task function should be called in main/rtos loop
-TU_ATTR_ALWAYS_INLINE static inline
-void tud_task (void)
-{
-  tud_task_ext(UINT32_MAX, false);
-}
+void tud_task (void);
 
 // Check if there is pending events need processing by tud_task()
 bool tud_task_event_ready(void);

@@ -57,11 +57,6 @@ void tu_print_mem(void const *buf, uint32_t count, uint8_t indent);
   #define tu_printf    printf
 #endif
 
-static inline void tu_print_arr(uint8_t const* buf, uint32_t bufsize)
-{
-  for(uint32_t i=0; i<bufsize; i++) tu_printf("%02X ", buf[i]);
-}
-
 // Log with Level
 #define TU_LOG(n, ...)        TU_XSTRCAT(TU_LOG, n)(__VA_ARGS__)
 #define TU_LOG_MEM(n, ...)    TU_XSTRCAT3(TU_LOG, n, _MEM)(__VA_ARGS__)

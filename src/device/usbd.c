@@ -601,6 +601,11 @@ void tud_task_ext(uint32_t timeout_ms, bool in_isr)
   }
 }
 
+void tud_task (void)
+{
+  tud_task_ext(UINT32_MAX, false);
+}
+
 //--------------------------------------------------------------------+
 // Control Request Parser & Handling
 //--------------------------------------------------------------------+
@@ -1348,6 +1353,11 @@ bool usbd_edpt_stalled(uint8_t rhport, uint8_t ep_addr)
   uint8_t const dir   = tu_edpt_dir(ep_addr);
 
   return _usbd_dev.ep_status[epnum][dir].stalled;
+}
+
+bool usbd_edpt_ready(uint8_t rhport, uint8_t ep_addr)
+{
+  return !usbd_edpt_busy(rhport, ep_addr) && !usbd_edpt_stalled(rhport, ep_addr);
 }
 
 /**
