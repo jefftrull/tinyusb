@@ -42,10 +42,21 @@ void write_mtvec(void (*fn)(void)) {
                       : /* clobbers: none */);
 }
 
+// for debugging
+void usb_intr_isr(void);  // in board code cs4200f.c
+bool usb_intr_putc(char c);
+bool usb_intr_putc_hex(char c);
+bool usb_intr_puts(char const * s);
+
 static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
     *(volatile uint8_t*)0xffd0 &= 0xf7;   // light on
 //    *(volatile uint8_t*)0xffd0 ^= 0x08;   // toggle light
 //    __asm__("ebreak");
+    if (int_src & 0x10) {
+        // interrupt endpoint transmit done
+        usb_intr_isr();
+    }
+
 }
 
 void dcd_init       (uint8_t rhport) {
@@ -82,7 +93,7 @@ void dcd_init       (uint8_t rhport) {
 
     // enable granular Reset, Rx and Tx interrupts for control endpoint
     // (effectively ANDed with EX0, so this doesn't fully enable them)
-    *INTENR0 = 0x83;
+    *INTENR0 |= 0x83;
     // enable EX0 (USB) and general interrupts
     *IE |= 0x81;
 }
