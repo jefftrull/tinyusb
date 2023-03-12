@@ -142,7 +142,7 @@ static void _ff_pull_const_addr(void * app_buf, const uint8_t * ff_buf, uint16_t
 }
 
 // send one item to fifo WITHOUT updating write pointer
-static inline void _ff_push(tu_fifo_t* f, void const * app_buf, uint16_t rel)
+void _ff_push(tu_fifo_t* f, void const * app_buf, uint16_t rel)
 {
   memcpy(f->buffer + (rel * f->item_size), app_buf, f->item_size);
 }
@@ -228,7 +228,7 @@ static void _ff_push_n(tu_fifo_t* f, void const * app_buf, uint16_t n, uint16_t 
 }
 
 // get one item from fifo WITHOUT updating read pointer
-static inline void _ff_pull(tu_fifo_t* f, void * app_buf, uint16_t rel)
+void _ff_pull(tu_fifo_t* f, void * app_buf, uint16_t rel)
 {
   memcpy(app_buf, f->buffer + (rel * f->item_size), f->item_size);
 }
@@ -320,7 +320,6 @@ static void _ff_pull_n(tu_fifo_t* f, void* app_buf, uint16_t n, uint16_t rd_ptr,
 //--------------------------------------------------------------------+
 
 // return only the index difference and as such can be used to determine an overflow i.e overflowable count
-TU_ATTR_ALWAYS_INLINE static inline
 uint16_t _ff_count(uint16_t depth, uint16_t wr_idx, uint16_t rd_idx)
 {
   // In case we have non-power of two depth we need a further modification
@@ -334,7 +333,6 @@ uint16_t _ff_count(uint16_t depth, uint16_t wr_idx, uint16_t rd_idx)
 }
 
 // return remaining slot in fifo
-TU_ATTR_ALWAYS_INLINE static inline
 uint16_t _ff_remaining(uint16_t depth, uint16_t wr_idx, uint16_t rd_idx)
 {
   uint16_t const count = _ff_count(depth, wr_idx, rd_idx);
@@ -381,7 +379,6 @@ static uint16_t backward_index(uint16_t depth, uint16_t idx, uint16_t offset)
 #endif
 
 // index to pointer, simply an modulo with minus.
-TU_ATTR_ALWAYS_INLINE static inline
 uint16_t idx2ptr(uint16_t depth, uint16_t idx)
 {
   // Only run at most 3 times since index is limit in the range of [0..2*depth)
@@ -392,7 +389,6 @@ uint16_t idx2ptr(uint16_t depth, uint16_t idx)
 // Works on local copies of w
 // When an overwritable fifo is overflowed, rd_idx will be re-index so that it forms
 // an full fifo i.e _ff_count() = depth
-TU_ATTR_ALWAYS_INLINE static inline
 uint16_t _ff_correct_read_index(tu_fifo_t* f, uint16_t wr_idx)
 {
   uint16_t rd_idx;
