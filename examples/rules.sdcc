@@ -130,7 +130,7 @@ copy-artifact: $(BUILD)/$(PROJECT).bin $(BUILD)/$(PROJECT).hex $(BUILD)/$(PROJEC
 vpath %.c . $(TOP)
 $(BUILD)/obj/%.rel: %.c
 	@echo CC $(notdir $@)
-	@$(CC) $(CFLAGS) -c -MD -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 # ASM sources lower case .s
 vpath %.s . $(TOP)
