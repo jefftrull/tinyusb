@@ -216,3 +216,12 @@ bool usb_intr_put_req(tusb_control_request_t const * req) {
 
 }
 
+void do_breakpoint(void) {
+    register uint32_t ret_addr asm ("ra");
+    uint32_t brk_pc = ret_addr;
+    usb_intr_puts("OOPS\n");
+    usb_intr_puts("BRK="); usb_intr_putc_hex(brk_pc >> 16); usb_intr_putc_hex(brk_pc >> 8); usb_intr_putc_hex(brk_pc & 0xff); usb_intr_putc('\n');
+
+    while (1)
+        *main_light_ctl ^= 0x08;
+}
