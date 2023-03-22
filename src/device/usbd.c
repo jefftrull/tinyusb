@@ -437,7 +437,9 @@ static void configuration_reset(uint8_t rhport)
   }
 
   tu_varclr(&_usbd_dev);
-  memset(_usbd_dev.itf2drv, DRVID_INVALID, sizeof(_usbd_dev.itf2drv)); // invalid mapping
+  // HACK - this data is normally initialized by SET_CONFIGURATION, which is implemented in HW
+  // This ugly workaround allows us to survive reset
+  // memset(_usbd_dev.itf2drv, DRVID_INVALID, sizeof(_usbd_dev.itf2drv)); // invalid mapping
   memset(_usbd_dev.ep2drv , DRVID_INVALID, sizeof(_usbd_dev.ep2drv )); // invalid mapping
 }
 
