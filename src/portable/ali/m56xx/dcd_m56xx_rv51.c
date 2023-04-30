@@ -84,6 +84,16 @@ void dcd_init       (uint8_t rhport) {
     *CTL_CTRL = 0x10;
     *CTL_CTRL = 0;
 
+    // intialize bulk endpoints
+    *BLKO_CTRL = 0x10;    // OUT (toward us)
+    *BLKO_CTRL = 0;
+
+    *BLKI_CTRL = 0x10;    // IN (toward host)
+    *BLKI_CTRL = 0;
+
+    // I have to do this to DMACTL for there to be an Inquiry LUN response
+    *DMACTL &= 0xfb;   // bit 2 must be 0, which means "DMA direction out" on the 5621. Strange.
+
     //
     // set up RISCV interrupt handling in the emulator
     //
@@ -110,6 +120,7 @@ void dcd_init       (uint8_t rhport) {
     // enable granular Reset, Rx and Tx interrupts for control endpoint
     // (effectively ANDed with EX0, so this doesn't fully enable them)
     *INTENR0 |= 0x83;
+    *INTENR0 |= 0x0c;   // also enable bulk interrupts
     // enable EX0 (USB) and general interrupts
     dcd_int_enable(rhport);
 }

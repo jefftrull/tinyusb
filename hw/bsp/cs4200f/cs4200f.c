@@ -32,6 +32,11 @@
 void board_init(void) {
     *IE &= ~((uint8_t)0x81);   // turn off EA and EX0
 
+    // configure endpoints. see e.g. EPCSETR in 5621 docs
+    *BLKO_SETR = 0x90;   // bulk output endpoint 2
+    *BLKI_SETR = 0x88;   // bulk input endpoint 1
+    *INTR_SETR = 0xd9;   // interrupt endpoint 3
+
     // set up interrupt endpoint for logging
     *INTR_CTRL = 0x10;   // initialize fifo
     *INTR_CTRL = 0;

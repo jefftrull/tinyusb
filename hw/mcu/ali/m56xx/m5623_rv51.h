@@ -13,11 +13,11 @@ static volatile uint8_t * const CTL_FIFO = (uint8_t *)0xfe02;  // control fifo c
 
 static volatile uint8_t * const BLKI_SETR = (uint8_t *)0xfe03; // bulk input endpoint settings
 static volatile uint8_t * const BLKI_CTRL = (uint8_t *)0xfe04; // bulk input control register
-static volatile uint8_t * const BLKI_FIFO = (uint8_t *)0xfe05; // bulk input FIFO (read-only)
+static volatile uint8_t * const BLKI_FIFO = (uint8_t *)0xfe05; // bulk input FIFO (write-only)
 
 static volatile uint8_t * const BLKO_SETR = (uint8_t *)0xfe06; // bulk output endpoint settings
 static volatile uint8_t * const BLKO_CTRL = (uint8_t *)0xfe07; // bulk output control register
-static volatile uint8_t * const BLKO_FIFO = (uint8_t *)0xfe08; // bulk output FIFO (write-only)
+static volatile const uint8_t * const BLKO_FIFO = (uint8_t *)0xfe08; // bulk output FIFO (read-only)
 
 static volatile uint8_t * const INTR_SETR = (uint8_t *)0xfe09; // interrupt endpoint settings
 static volatile uint8_t * const INTR_CTRL = (uint8_t *)0xfe0a; // interrupt control register
@@ -34,7 +34,7 @@ static volatile uint8_t * const INTENR1 = (uint8_t *)0xffb5;   // interrupt 1 en
 
 // DMA stuff
 
-static volatile uint8_t * const DMACTRL = (uint8_t *)0xfe19;   // there may be more! 0xffe1, 0xffed?
+static volatile uint8_t * const DMACTL = (uint8_t *)0xfe19;    // there may be more! 0xffe1, 0xffed?
 
 static volatile uint8_t * const DMA_ADDR0 = (uint8_t *)0xfe98; // transfer address start offset?
 static volatile uint8_t * const DMA_ADDR1 = (uint8_t *)0xfe99;
