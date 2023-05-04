@@ -34,7 +34,7 @@ static volatile uint8_t * const INTENR1 = (uint8_t *)0xffb5;   // interrupt 1 en
 
 // DMA stuff
 
-static volatile uint8_t * const DMACTL = (uint8_t *)0xfe19;    // there may be more! 0xffe1, 0xffed?
+static volatile uint8_t * const DMACTR = (uint8_t *)0xfe19;    // there may be more! 0xffe1, 0xffed?
 
 static volatile uint8_t * const DMA_ADDR0 = (uint8_t *)0xfe98; // transfer address start offset?
 static volatile uint8_t * const DMA_ADDR1 = (uint8_t *)0xfe99;

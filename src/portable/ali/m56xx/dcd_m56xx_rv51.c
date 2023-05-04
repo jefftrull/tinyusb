@@ -43,17 +43,31 @@ void write_mtvec(void (*fn)(void)) {
 }
 
 // Tx bookkeeping
-static uint16_t bytes_sent = 0;       // for remembering how many bytes we put in the fifo
-static uint8_t const * remaining_data = NULL;
-static uint16_t bytes_remaining = 0;  // data count not yet placed in Tx fifo
+// Control endpoint
+static uint16_t ctl_bytes_sent = 0;       // for remembering how many bytes we put in the fifo
+static uint8_t const * ctl_remaining_data = NULL;
+static uint16_t ctl_bytes_remaining = 0;  // data count not yet placed in Tx fifo
+
+// Bulk IN
+static uint16_t bulk_bytes_sent = 0;
+static uint8_t const * bulk_remaining_data = NULL;
+static uint16_t bulk_bytes_remaining = 0;
 
 // Rx bookkeeping
-static uint8_t bytes_requested = 0;
-static uint8_t * tusb_rcv_buffer = NULL;
+// Control endpoint
+static uint8_t ctl_bytes_requested = 0;
+static uint8_t * tusb_ctl_rcv_buffer = NULL;
 
-// for isr when there is no pending rcv request
-static uint16_t bytes_stored = 0;
-static uint8_t rx_buffer[64];
+// Bulk OUT
+static uint8_t bulk_bytes_requested = 0;
+static uint8_t * tusb_bulk_rcv_buffer = NULL;
+
+// Temporary storage for data received prior to a request from TUSB
+static uint16_t ctl_bytes_stored = 0;
+static uint8_t ctl_rx_buffer[64];
+
+static uint16_t bulk_bytes_stored = 0;
+static uint8_t bulk_rx_buffer[512];
 
 // for debugging
 void usb_intr_isr(void);  // in board code cs4200f.c
@@ -62,8 +76,12 @@ bool usb_intr_putc_hex(char c);
 bool usb_intr_puts(char const * s);
 bool usb_intr_put_req(tusb_control_request_t const * req);
 
-uint8_t fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
-    uint16_t send_count = 0;
+//
+// Transmit FIFO handling
+//
+
+uint8_t ctl_fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
+    uint8_t send_count = 0;
 
     while ((send_count < buffer_size) && (~(*CTL_CTRL) & (1 << 6))) {
         // FIFO not full and we still have data
@@ -74,7 +92,20 @@ uint8_t fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
     return send_count;
 }
 
+uint16_t bulk_fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
+    uint16_t send_count = 0;
+
+    while ((send_count < buffer_size) && (~(*BLKI_CTRL) & (1 << 6))) {
+        // FIFO not full and we still have data
+        *BLKI_FIFO = *buffer++;
+        ++send_count;
+    }
+
+    return send_count;
+}
+
 static void __attribute__ ((interrupt ("machine"))) dcd_isr(void);
+
 void dcd_init       (uint8_t rhport) {
     (void)rhport;
 
@@ -90,9 +121,6 @@ void dcd_init       (uint8_t rhport) {
 
     *BLKI_CTRL = 0x10;    // IN (toward host)
     *BLKI_CTRL = 0;
-
-    // I have to do this to DMACTL for there to be an Inquiry LUN response
-    *DMACTL &= 0xfb;   // bit 2 must be 0, which means "DMA direction out" on the 5621. Strange.
 
     //
     // set up RISCV interrupt handling in the emulator
@@ -155,22 +183,22 @@ static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
     if (int_src & 0x01) {
         // Tx done on control endpoint
 
-        if (!first_tx && (bytes_remaining != 0)) {
+        if (!first_tx && (ctl_bytes_remaining != 0)) {
             // send another chunk
 
-            bool short_transmission = (bytes_remaining < 64);
+            bool short_transmission = (ctl_bytes_remaining < 64);
 
-            uint8_t packet_size = fill_xmit_fifo(remaining_data, bytes_remaining);
-            bytes_remaining -= packet_size;
-            remaining_data += packet_size;
-            bytes_sent += packet_size;
+            uint8_t packet_size = ctl_fill_xmit_fifo(ctl_remaining_data, ctl_bytes_remaining);
+            ctl_bytes_remaining -= packet_size;
+            ctl_remaining_data += packet_size;
+            ctl_bytes_sent += packet_size;
             if (short_transmission) {
                 *CTL_CTRL |= (uint8_t)(1 << 5);  // force transmit
             }
 
-        } else if (!first_tx && (bytes_remaining == 0)) {
+        } else if (!first_tx && (ctl_bytes_remaining == 0)) {
             // all data en route to host; inform TUSB (which may give us more)
-            dcd_event_xfer_complete(0, 0x80, bytes_sent, XFER_RESULT_SUCCESS, true);
+            dcd_event_xfer_complete(0, 0x80, ctl_bytes_sent, XFER_RESULT_SUCCESS, true);
         } else {
             // this always happens right after firmware deployment because
             // the previous firmware transmitted a response to the host ("update successful")
@@ -206,21 +234,21 @@ static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
             // we've received something, but it's not a setup packet
 
             // is there is a pending request from the main thread?
-            if (bytes_requested != 0) {
+            if (ctl_bytes_requested != 0) {
                 uint16_t bytes_received = 0;   // for remembering how many bytes we took from the fifo
-                while ((bytes_received < bytes_requested) && (~(*CTL_CTRL) & (1 << 7))) {
+                while ((bytes_received < ctl_bytes_requested) && (~(*CTL_CTRL) & (1 << 7))) {
                     // FIFO not empty and there is space remaining
-                    *tusb_rcv_buffer++ = *CTL_FIFO;
+                    *tusb_ctl_rcv_buffer++ = *CTL_FIFO;
                     ++bytes_received;
                 }
                 // clear pending request
-                bytes_requested = 0;
+                ctl_bytes_requested = 0;
                 // notify tusb of completion
                 dcd_event_xfer_complete(0, 0, bytes_received, XFER_RESULT_SUCCESS, true);
             } else {
                 // store excess data
-                while ((bytes_stored < 64) && (~(*CTL_CTRL) & (1 << 7))) {
-                    rx_buffer[bytes_stored++] = *CTL_FIFO;
+                while ((ctl_bytes_stored < 64) && (~(*CTL_CTRL) & (1 << 7))) {
+                    ctl_rx_buffer[ctl_bytes_stored++] = *CTL_FIFO;
                 }
             }
         } else {
@@ -243,26 +271,62 @@ static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
         dcd_event_bus_signal(0, DCD_EVENT_BUS_RESET, true);
     }
 
+    if (int_src & 0x08) {
+        // rcv complete BLKO
+
+        if ((*BLKO_CTRL) & 0x80) {
+            // empty FIFO but we got a data receive interrupt
+            dcd_event_xfer_complete(0, 0x02, 0, XFER_RESULT_SUCCESS, true); // ZLP?
+        } else {
+            if (bulk_bytes_requested != 0) {
+                // tusb previously asked us to do a read
+                uint16_t bytes_received = 0;
+                while ((bytes_received < bulk_bytes_requested) && ((~(*BLKO_CTRL) & (1 << 7)))) {
+                    *tusb_bulk_rcv_buffer++ = *BLKO_FIFO;
+                    ++bytes_received;
+                }
+                bulk_bytes_requested = 0;  // clear pending request
+                dcd_event_xfer_complete(0, 0x02, bytes_received, XFER_RESULT_SUCCESS, true);
+            } else {
+                // store this excess data in the hope tusb will ask for it
+                uint16_t bytes_received = 0;
+                while ((bulk_bytes_stored < 512) && (~(*BLKO_CTRL) & (1 << 7))) {
+                    bulk_rx_buffer[bulk_bytes_stored++] = *BLKO_FIFO;
+                    ++bytes_received;
+                }
+            }
+        }
+    }
+
+    if (int_src & 0x04) {
+        // transmit complete on BLKI
+        if (bulk_bytes_remaining != 0) {
+            bool short_transmission = (bulk_bytes_remaining < 512);
+
+            uint8_t packet_size = bulk_fill_xmit_fifo(bulk_remaining_data, bulk_bytes_remaining);
+            bulk_bytes_remaining -= packet_size;
+            bulk_remaining_data += packet_size;
+            bulk_bytes_sent += packet_size;
+            if (short_transmission) {
+                *BLKI_CTRL |= (uint8_t)(1 << 5);  // force transmit
+            }
+        } else {
+            dcd_event_xfer_complete(0, 0x81, bulk_bytes_sent, XFER_RESULT_SUCCESS, true);
+        }
+    }
+
     *IE |= 0x01;   // EX0 = 1
 
 }
 
+// These stubs did not require any implementation for MSC to work
 void dcd_set_address(uint8_t rhport, uint8_t dev_addr) {}
-
 void dcd_remote_wakeup(uint8_t rhport) {}
-
 void dcd_connect(uint8_t rhport) {}
-
 void dcd_disconnect(uint8_t rhport) {}
-
-// dcd_event_bus_signal and dcd_event_setup_received should be called by our code
-
-// DCD endpoint stuff
-
-bool dcd_edpt_open            (uint8_t rhport, tusb_desc_endpoint_t const * desc_ep) {
-    return false;
+bool dcd_edpt_open(uint8_t rhport, tusb_desc_endpoint_t const * desc_ep) {
+    return true;
 }
-
 void dcd_edpt_close (uint8_t rhport, uint8_t ep_addr) {}
 
 bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t total_bytes) {
@@ -274,16 +338,16 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
         // atomic section (w.r.t. transmission)
         // the Tx interrupt accesses these same values
         *INTENR0 &= ~((uint8_t)0x01);   // disable Tx complete interrupt
-        remaining_data = buffer;
-        bytes_remaining = total_bytes;
+        ctl_remaining_data = buffer;
+        ctl_bytes_remaining = total_bytes;
 
-        bytes_sent = fill_xmit_fifo(remaining_data, bytes_remaining);
+        ctl_bytes_sent = ctl_fill_xmit_fifo(ctl_remaining_data, ctl_bytes_remaining);
         // the HW may be much faster than our emulated software and can
-        // potentially empty the FIFO and update bytes_remaining before we get here:
-        bytes_remaining -= bytes_sent;
-        remaining_data += bytes_sent;
+        // potentially empty the FIFO and update ctl_bytes_remaining before we get here:
+        ctl_bytes_remaining -= ctl_bytes_sent;
+        ctl_remaining_data += ctl_bytes_sent;
 
-        if ((total_bytes < 64) && (bytes_remaining == 0)) {
+        if ((total_bytes < 64) && (ctl_bytes_remaining == 0)) {
             // hit the send button
             *CTL_CTRL |= (uint8_t)(1 << 5);
         }
@@ -295,36 +359,99 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
 
         *INTENR0 &= ~((uint8_t)0x02);   // disable Rx complete interrupt
 
-        if ((bytes_stored > 0) && (total_bytes > 0)) {
+        if ((ctl_bytes_stored > 0) && (total_bytes > 0)) {
             // serve this request immediately from a prior interrupt
-            uint8_t xfer_size = (bytes_stored > total_bytes) ? total_bytes : bytes_stored;
-            memcpy(buffer, rx_buffer, xfer_size);
+            uint8_t xfer_size = (ctl_bytes_stored > total_bytes) ? total_bytes : ctl_bytes_stored;
+            memcpy(buffer, ctl_rx_buffer, xfer_size);
             dcd_event_xfer_complete(0, 0, xfer_size, XFER_RESULT_SUCCESS, false);
-            bytes_stored = 0;  // I guess we are discarding the remainder of the data here... TODO reconsider
+            ctl_bytes_stored = 0;  // I guess we are discarding the remainder of the data here... TODO reconsider
         } else {
             *CTL_CTRL &= 0xfd;   // put control endpoint in receive mode
 
             // record request
-            tusb_rcv_buffer = buffer;
-            bytes_requested = total_bytes;
+            tusb_ctl_rcv_buffer = buffer;
+            ctl_bytes_requested = total_bytes;
         }
 
         *INTENR0 |= 0x02;   // enable Rx complete interrupt
 
         return true;
+    } else if (ep_addr == 0x02) {
+        // bulk OUT (receiving)
+
+        // This bit of DMACTR is documented for the 5621 as "DMA operation direction"
+        // but it needs to be set appropriately regardless of whether we use DMA
+        *DMACTR &= ~((uint8_t)0x04);    // put bulk endpoints into receive mode (I think)
+
+        *INTENR0 &= ~((uint8_t)0x08);   // disable bulk receive interrupts
+
+        if ((bulk_bytes_stored > 0) && (total_bytes > 0)) {
+            // serve this request immediately from a prior interrupt
+            uint8_t xfer_size = (bulk_bytes_stored > total_bytes) ? total_bytes : bulk_bytes_stored;
+            memcpy(buffer, bulk_rx_buffer, xfer_size);
+            dcd_event_xfer_complete(0, 0x02, xfer_size, XFER_RESULT_SUCCESS, false);
+            bulk_bytes_stored = 0;
+        } else {
+            // record request
+            tusb_bulk_rcv_buffer = buffer;
+            bulk_bytes_requested = total_bytes;
+        }
+
+        *INTENR0 |= 0x08;               // enable bulk receive interrupts
+
+        return true;
+    } else if (ep_addr == 0x81) {
+        // we do sometimes see exactly 512B here
+        // we don't seem to ever send ZLP though
+
+        *DMACTR |= 0x04;               // put bulk endpoints into transmit mode
+
+        *INTENR0 &= ~((uint8_t)0x04);
+        bulk_remaining_data = buffer;
+        bulk_bytes_remaining = total_bytes;
+
+        bulk_bytes_sent = bulk_fill_xmit_fifo(bulk_remaining_data, bulk_bytes_remaining);
+        bulk_bytes_remaining -= bulk_bytes_sent;
+        bulk_remaining_data += bulk_bytes_sent;
+
+        if ((total_bytes < 512) && (bulk_bytes_remaining == 0)) {
+            *BLKI_CTRL |= (uint8_t)(1 << 5);
+        }
+
+        *INTENR0 |= 0x04;
+
+        return true;
     } else {
-        // there will be other cases
+        // This shouldn't happen
         TU_BREAKPOINT();
     }
     return false;
 }
 
 void dcd_edpt_stall (uint8_t rhport, uint8_t ep_addr) {
-    *CTL_CTRL |= 0x01;
+    if ((ep_addr & 0x7f) == 0) {
+        *CTL_CTRL |= 0x01;
+    } else if ((ep_addr & 0x7f) == 1) {
+        *BLKI_CTRL |= 0x01;
+    } else if ((ep_addr & 0x7f) == 2) {
+        *BLKO_CTRL |= 0x01;
+    } else {
+        // should not happen
+        TU_BREAKPOINT();
+    }
 }
 
-void dcd_edpt_clear_stall     (uint8_t rhport, uint8_t ep_addr) {
-    *CTL_CTRL &= 0xfe;
+void dcd_edpt_clear_stall (uint8_t rhport, uint8_t ep_addr) {
+    if ((ep_addr & 0x7f) == 0) {
+        *CTL_CTRL &= 0xfe;
+    } else if ((ep_addr & 0x7f) == 1) {
+        *BLKI_CTRL &= 0xfe;
+    } else if ((ep_addr & 0x7f) == 2) {
+        *BLKO_CTRL &= 0xfe;
+    } else {
+        // should not happen
+        TU_BREAKPOINT();
+    }
 }
 
 #endif  // M5623, the only one for now
