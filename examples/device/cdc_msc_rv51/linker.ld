@@ -23,8 +23,8 @@ MEMORY
       RAM (rw) : ORIGIN = 0x00008000, LENGTH = 10k
       ROM (rx) : ORIGIN = 0x80000000, LENGTH = 32k
 */
-      RAM (rw) : ORIGIN = 0x00008000, LENGTH = 10k
-      ROM (rx) : ORIGIN = 0x80000000, LENGTH = 64k
+      RAM (rw) : ORIGIN = 0x00008000, LENGTH = 0x5000
+      ROM (rx) : ORIGIN = 0x80000000, LENGTH = 0x8000
 }
 
 __stack_top = ORIGIN(RAM) + LENGTH(RAM);
