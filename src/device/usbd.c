@@ -445,15 +445,8 @@ static void configuration_reset(uint8_t rhport)
   // if we simply reset these tables everything will fail. Instead here I will hardcode
   // what should happen as a result of SET_CONFIGURATION:
 
-  // Set up itf2drv and ep2drv matching usb_descriptors.c until we have a better approach
-  _usbd_dev.itf2drv[0] = 0;  // CDC
-  _usbd_dev.itf2drv[1] = 0;  // CDC Data
-  _usbd_dev.itf2drv[2] = 1;  // MSC
-  _usbd_dev.ep2drv[1][1] = 0;  // 0x81 CDC notif
-  _usbd_dev.ep2drv[2][0] = 0;  // 0x02 CDC OUT
-  _usbd_dev.ep2drv[2][1] = 0;  // 0x82 CDC IN
-  _usbd_dev.ep2drv[3][0] = 1;  // 0x02 MSC OUT
-  _usbd_dev.ep2drv[3][1] = 1;  // 0x82 MSC IN
+  process_set_config(0, 1);
+  _usbd_dev.cfg_num = 1;
 
 }
 
