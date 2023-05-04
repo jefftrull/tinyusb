@@ -1,4 +1,5 @@
 CFLAGS += \
+  -DBOARD_TUD_MAX_SPEED=OPT_MODE_HIGH_SPEED \
   -DTUP_DCD_ENDPOINT_MAX=8 \
   -march=rv32im -mabi=ilp32 \
   -nostdlib \
