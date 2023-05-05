@@ -79,9 +79,7 @@ uint8_t const * tud_descriptor_device_cb(void)
 
 enum
 {
-  ITF_NUM_CDC = 0,
-  ITF_NUM_CDC_DATA,
-  ITF_NUM_MSC,
+  ITF_NUM_MSC = 0,
   ITF_NUM_TOTAL
 };
 
@@ -128,16 +126,16 @@ enum
   #define EPNUM_MSC_IN      0x85
 
 #else
-  #define EPNUM_CDC_NOTIF   0x81
-  #define EPNUM_CDC_OUT     0x02
-  #define EPNUM_CDC_IN      0x82
+// no support for CDC and MSC simultaneously on the M5623
+// We need another pair of bulk endpoints, or for the existing endpoints to be bidirectional
+// Judging by the available interrupt conditions alone, each endpoint has a fixed direction
 
-  #define EPNUM_MSC_OUT     0x03
-  #define EPNUM_MSC_IN      0x83
+  #define EPNUM_MSC_OUT     0x02
+  #define EPNUM_MSC_IN      0x81
 
 #endif
 
-#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
+#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_MSC_DESC_LEN)
 
 // full speed configuration
 uint8_t const desc_fs_configuration[] =
@@ -145,11 +143,8 @@ uint8_t const desc_fs_configuration[] =
   // Config number, interface count, string index, total length, attribute, power in mA
   TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
-  // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
-
   // Interface number, string index, EP Out & EP In address, EP size
-  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
 };
 
 #if TUD_OPT_HIGH_SPEED
@@ -161,11 +156,8 @@ uint8_t const desc_hs_configuration[] =
   // Config number, interface count, string index, total length, attribute, power in mA
   TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
-  // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 512),
-
   // Interface number, string index, EP Out & EP In address, EP size
-  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 512),
+  TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 512),
 };
 
 // other speed configuration
@@ -178,9 +170,9 @@ tusb_desc_device_qualifier_t const desc_device_qualifier =
   .bDescriptorType    = TUSB_DESC_DEVICE_QUALIFIER,
   .bcdUSB             = USB_BCD,
 
-  .bDeviceClass       = TUSB_CLASS_MISC,
-  .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-  .bDeviceProtocol    = MISC_PROTOCOL_IAD,
+  .bDeviceClass       = 0,
+  .bDeviceSubClass    = 0,
+  .bDeviceProtocol    = 0,
 
   .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
   .bNumConfigurations = 0x01,
@@ -243,8 +235,7 @@ char const* string_desc_arr [] =
   "TinyUSB",                     // 1: Manufacturer
   "TinyUSB Device",              // 2: Product
   "123456789012",                // 3: Serials, should use chip ID
-  "TinyUSB CDC",                 // 4: CDC Interface
-  "TinyUSB MSC",                 // 5: MSC Interface
+  "TinyUSB MSC",                 // 4: MSC Interface
 };
 
 static uint16_t _desc_str[32];
