@@ -59,7 +59,7 @@ static uint8_t ctl_bytes_requested = 0;
 static uint8_t * tusb_ctl_rcv_buffer = NULL;
 
 // Bulk OUT
-static uint8_t bulk_bytes_requested = 0;
+static uint16_t bulk_bytes_requested = 0;
 static uint8_t * tusb_bulk_rcv_buffer = NULL;
 
 // Temporary storage for data received prior to a request from TUSB
@@ -93,15 +93,45 @@ uint8_t ctl_fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
 }
 
 uint16_t bulk_fill_xmit_fifo(uint8_t const * buffer, uint16_t buffer_size) {
-    uint16_t send_count = 0;
+    if (buffer_size < 512) {
+        uint16_t send_count = 0;
 
-    while ((send_count < buffer_size) && (~(*BLKI_CTRL) & (1 << 6))) {
-        // FIFO not full and we still have data
-        *BLKI_FIFO = *buffer++;
-        ++send_count;
+        *DMACTR |= 0x04;
+        *DMACTR &= 0xfe;   // disable DMA
+
+        while ((send_count < buffer_size) && (~(*BLKI_CTRL) & (1 << 6))) {
+            // FIFO not full and we still have data
+            *BLKI_FIFO = *buffer++;
+            ++send_count;
+        }
+
+        return send_count;
     }
 
-    return send_count;
+    // transfer address
+
+    // the 8051 memory space seems to be mapped to 0 in the DRAM
+    // scale address from bytes to (2B) words
+    *DMA_ADDR0 = (((uintptr_t)buffer) >> 1) & 0xff;
+    *DMA_ADDR1 = ((((uintptr_t)buffer) >> 1) & 0xff00) >> 8;
+    *DMA_ADDR2 = 0;
+
+    // set up DMA transfer
+    *DMACTR = 0x80;    // init
+    *DMACTR = 0x24;    // direction IN (towards host), 60MHz
+
+    // transfer size in 16b words
+    *DMACLR = (buffer_size >> 1) & 0xff;
+    *DMACMR = ((buffer_size >> 1) & 0xff00) >> 8;
+
+    // launch
+    *DMACTR |= 0x01;
+
+    // Mysterious control register. Necessary for bulk transfers:
+    *((volatile uint8_t*)0xffe1) |= 0x40;
+    *((volatile uint8_t*)0xffe1) |= 0x20;
+
+    return buffer_size;
 }
 
 static void __attribute__ ((interrupt ("machine"))) dcd_isr(void);
@@ -303,7 +333,7 @@ static void __attribute__ ((interrupt ("machine"))) dcd_isr(void)  {
         if (bulk_bytes_remaining != 0) {
             bool short_transmission = (bulk_bytes_remaining < 512);
 
-            uint8_t packet_size = bulk_fill_xmit_fifo(bulk_remaining_data, bulk_bytes_remaining);
+            uint16_t packet_size = bulk_fill_xmit_fifo(bulk_remaining_data, bulk_bytes_remaining);
             bulk_bytes_remaining -= packet_size;
             bulk_remaining_data += packet_size;
             bulk_bytes_sent += packet_size;
