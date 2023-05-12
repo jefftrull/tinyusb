@@ -441,6 +441,14 @@ static void configuration_reset(uint8_t rhport)
   tu_varclr(&_usbd_dev);
   memset(_usbd_dev.itf2drv, DRVID_INVALID, sizeof(_usbd_dev.itf2drv)); // invalid mapping
   memset(_usbd_dev.ep2drv , DRVID_INVALID, sizeof(_usbd_dev.ep2drv )); // invalid mapping
+
+  // HACK - this data is normally initialized by SET_CONFIGURATION, but our hardware (M5623)
+  // likes to do that itself. So we will never see a SET_CONFIGURATION inside TUSB, and
+  // if we simply reset these tables everything will fail. Instead here I will hardcode
+  // what should happen as a result of SET_CONFIGURATION:
+
+  process_set_config(0, 1);
+  _usbd_dev.cfg_num = 1;
 }
 
 static void usbd_reset(uint8_t rhport)
