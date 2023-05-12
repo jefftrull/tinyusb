@@ -251,7 +251,7 @@
   #define TU_BYTE_ORDER TU_LITTLE_ENDIAN
 
   #define TU_BSWAP16(u16)  ((u16 << 8) | (u16 >> 8))
-  #define TU_BSWAP32(u32)  ((u32 << 16) | (u32 >> 16))
+  #define TU_BSWAP32(u32)  ((uint32_t)((u32 & 0xff) << 24) | (uint32_t)((u32 & 0xff00) << 8) | (uint32_t)((u32 & 0xff0000) >> 8) | (uint32_t)((u32 & 0xff000000) >> 24))
 
 #else 
   #error "Compiler attribute porting is required"
