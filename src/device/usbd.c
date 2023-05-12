@@ -246,7 +246,8 @@ static uint8_t _app_driver_count = 0;
 static inline usbd_class_driver_t const * get_driver(uint8_t drvid)
 {
   // Application drivers
-  if ( usbd_app_driver_get_cb )
+//  if ( usbd_app_driver_get_cb )
+  if ( false )
   {
     if ( drvid < _app_driver_count ) return &_app_driver[drvid];
     drvid -= _app_driver_count;
@@ -404,7 +405,8 @@ bool tud_init (uint8_t rhport)
   TU_ASSERT(_usbd_q);
 
   // Get application driver if available
-  if ( usbd_app_driver_get_cb )
+//  if ( usbd_app_driver_get_cb )
+  if ( false )
   {
     _app_driver = usbd_app_driver_get_cb(&_app_driver_count);
   }

@@ -809,7 +809,9 @@ static int32_t proc_builtin_scsi(uint8_t lun, uint8_t const scsi_cmd[16], uint8_
       memcpy(buffer, &sense_rsp, (size_t) resplen);
 
       // request sense callback could overwrite the sense data
-      if (tud_msc_request_sense_cb)
+      // another workaround for lack of "weak" symbols in sdcc
+      // if (tud_msc_request_sense_cb)
+      if (false)
       {
         resplen = tud_msc_request_sense_cb(lun, buffer, (uint16_t) bufsize);
       }

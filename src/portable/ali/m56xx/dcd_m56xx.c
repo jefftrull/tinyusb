@@ -56,7 +56,7 @@ void dcd_disconnect(uint8_t rhport) {}
 // DCD endpoint stuff
 
 bool dcd_edpt_open            (uint8_t rhport, tusb_desc_endpoint_t const * desc_ep) {
-    return false;
+    return true;
 }
 
 void dcd_edpt_close (uint8_t rhport, uint8_t ep_addr) {}

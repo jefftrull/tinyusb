@@ -141,11 +141,11 @@ void dcd_sof_enable(uint8_t rhport, bool en) {}
 // the one DCD function that is optional/WEAK and also checked accordingly
 void dcd_edpt0_status_complete(uint8_t rhport, tusb_control_request_t const * request) {}
 
-bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const * request) {
+bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, CFG_TUSB_MEM_SECTION tusb_control_request_t const * request) {
     return false;   // stalls (reports error) if called, since we don't support
 }
 
-uint8_t tud_msc_get_maxlun_cb(void) { return 1; }   // dunno what this is
+uint8_t tud_msc_get_maxlun_cb(void) { return 1; }   // 1 is default anyway so this is NOP
 
 void tud_msc_read10_complete_cb(uint8_t lun) {}
 
