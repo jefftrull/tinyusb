@@ -1,4 +1,5 @@
 CFLAGS += \
+  -DBOARD_TUD_MAX_SPEED=OPT_MODE_HIGH_SPEED \
   --model-large \
   --stack-auto \
   --fomit-frame-pointer
