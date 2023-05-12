@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include <mcs51/8052.h>
 
+#include "hw/mcu/ali/m56xx/m5623.h"
+
 volatile uint8_t * main_light_ctl = (uint8_t*)0xffd0;
 
 //
@@ -85,6 +87,12 @@ void board_init(void) {
     ET1 = 0;
     EX0 = 0;
     EX1 = 0;
+
+    // configure endpoints. see e.g. EPCSETR in 5621 docs
+    BLKO_SETR = 0x90;   // bulk output endpoint 2
+    BLKI_SETR = 0x88;   // bulk input endpoint 1
+    INTR_SETR = 0xd9;   // interrupt endpoint 3
+
 
     timer_init();
 
