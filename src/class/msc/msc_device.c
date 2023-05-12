@@ -71,6 +71,7 @@ typedef struct
   uint8_t add_sense_qualifier;
 }mscd_interface_t;
 
+uint8_t _padding[7];    // HACK (sdcc limitation) ad hoc padding to move _mcsd_buf to 16b boundary
 CFG_TUSB_MEM_SECTION CFG_TUSB_MEM_ALIGN static mscd_interface_t _mscd_itf;
 CFG_TUSB_MEM_SECTION CFG_TUSB_MEM_ALIGN static uint8_t _mscd_buf[CFG_TUD_MSC_EP_BUFSIZE];
 
