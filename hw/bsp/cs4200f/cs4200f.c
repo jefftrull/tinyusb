@@ -94,3 +94,14 @@ void board_init(void) {
 // we don't have these, so it's a little alarming they seem to be required
 int board_uart_read(uint8_t* buf, int len) { return 0; }
 int board_uart_write(void const * buf, int len) { return 0; }
+
+void do_breakpoint() {
+    // get the PC where we were called
+    // PC+3 will be stored on the stack
+    __idata const uint8_t * TOS = (__idata const uint8_t *)SP;
+    uint16_t brk_pc = (uint16_t)(((*TOS) << 8) | *(TOS-1)) - 3;
+//    usb_intr_puts("BRK="); usb_intr_putc_hex(brk_pc >> 8); usb_intr_putc_hex(brk_pc & 0xff); usb_intr_putc('\n');
+
+    while (1)
+        *main_light_ctl ^= 0x08;
+}

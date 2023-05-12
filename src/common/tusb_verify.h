@@ -94,7 +94,8 @@
   #define TU_BREAKPOINT() do { __asm("sdbbp 0"); } while (0)
 
 #else
-  #define TU_BREAKPOINT() do {} while (0)
+  void do_breakpoint(void);
+#define TU_BREAKPOINT() do_breakpoint(); do {} while (0)
 #endif
 
 /*------------------------------------------------------------------*/
