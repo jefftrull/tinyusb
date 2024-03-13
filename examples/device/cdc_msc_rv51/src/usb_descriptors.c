@@ -24,6 +24,7 @@
  */
 
 #include "tusb.h"
+#include "intr_ep.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -80,6 +81,7 @@ uint8_t const * tud_descriptor_device_cb(void)
 enum
 {
   ITF_NUM_MSC = 0,
+  ITF_NUM_INTR_EP,
   ITF_NUM_TOTAL
 };
 
@@ -133,9 +135,19 @@ enum
   #define EPNUM_MSC_OUT     0x02
   #define EPNUM_MSC_IN      0x81
 
+  #define EPNUM_INTR 0x83
+
 #endif
 
-#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_MSC_DESC_LEN)
+#define TUD_INTR_EP_DESCRIPTOR_M5623(_itfnum, _stridx, _epintr, _epintrsize) \
+  /* Interface */\
+  9, TUSB_DESC_INTERFACE, _itfnum, 0, 1, TUSB_CLASS_VENDOR_SPECIFIC, INTR_EP_INTERFACE_SUBCLASS, INTR_EP_INTERFACE_PROTOCOL, _stridx,\
+  /* Endpoint Intr */\
+  7, TUSB_DESC_ENDPOINT, _epintr, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(_epintrsize), 1
+
+#define TUD_INTR_EP_M5623_LEN (9 + 7)
+
+#define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_MSC_DESC_LEN + TUD_INTR_EP_M5623_LEN)
 
 // full speed configuration
 uint8_t const desc_fs_configuration[] =
@@ -145,6 +157,9 @@ uint8_t const desc_fs_configuration[] =
 
   // Interface number, string index, EP Out & EP In address, EP size
   TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+
+  // Interface number, string index, EP Intr address, EP size
+  TUD_INTR_EP_DESCRIPTOR_M5623(ITF_NUM_INTR_EP, 5, EPNUM_INTR, 1)
 };
 
 #if TUD_OPT_HIGH_SPEED
@@ -158,6 +173,9 @@ uint8_t const desc_hs_configuration[] =
 
   // Interface number, string index, EP Out & EP In address, EP size
   TUD_MSC_DESCRIPTOR(ITF_NUM_MSC, 4, EPNUM_MSC_OUT, EPNUM_MSC_IN, 512),
+
+  // Interface number, string index, EP Intr address, EP size
+  TUD_INTR_EP_DESCRIPTOR_M5623(ITF_NUM_INTR_EP, 5, EPNUM_INTR, 1)
 };
 
 // other speed configuration
@@ -236,6 +254,7 @@ char const* string_desc_arr [] =
   "TinyUSB Device",              // 2: Product
   "123456789012",                // 3: Serials, should use chip ID
   "TinyUSB MSC",                 // 4: MSC Interface
+  "TinyUSB Debug",               // 4: Debug Interface (interrupt)
 };
 
 static uint16_t _desc_str[32];
